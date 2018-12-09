@@ -1,16 +1,28 @@
 ---
-title: MLB
-output: 
-  html_document:
+title: "MLB"
+output:
+  html_document: null
   df_print: paged
+  pdf_document: default
   code_folding: show
 ---
-Set up libraries and working directory
+###Background
+Baseball is a game of failure.  Good baseball hitters only hit .300 average meaning they fail at least 70% of the time. To play the game of baseball, especially at the highest level, one must accept the fact that failure is a part of the game.  How a player responds to this adversity is what differentiates the good players from all the rest.  Through analyzing data on professional baseball players, we want to develop a predictive model that can accurately predict whether a player is a good player, as defined by the OPS - on base percentage plus slugging average - being above a certain threshold.  We are interested in seeing relationships between OPS and the various parameters and using it to predict improvement in performance from one year to the next.  This information is helpful to organizations who are constantly trying to find different ways to value players to maximize team success.  Players who are constantly improving themselves rather than staying stagnant or declining are an asset to any team.  
+
+###Problem Statement  
+Predict improvement in a player's performance (based on OPS) from one year to the next. 
+
+###Analytical Solution 
+Identify those players in a given year who have exhibited average to poor performance based on OPS and apply machine learning to predict whether they exhibit better performance in the following year. The goal is to achieve high accuracy on finding those players who improve from "average/poor" in the first year (OPS <.800) to "good" (OPS>=.800) in the subsequent year. 
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+####Code:
 
+Set up libraries and working directory
 ```{r }
 library(readr)
 library(ggplot2)
@@ -366,7 +378,7 @@ fancyRpartPlot(fitimp)
 
 ```
 
-Determine confusion matrix and accuracy score on train set and then appyl model to test set and obtain accuracy
+Determine confusion matrix and accuracy score on train set and then apply model to test set and obtain accuracy
 
 ```{r}
 #on training data
@@ -413,7 +425,22 @@ library(rpart)
 library(rpart.plot)
 library(rattle)
 fancyRpartPlot(fitimp_bal)
-
 ```
 
+```{r}
+#on training data
+tree_predict_bal=predict(fitimp_bal,trainimp, type="class")
+(conf_matrix=table(tree_predict_bal,trainimp$Improved))
+
+accuracy<-(conf_matrix[1,1]+conf_matrix[2,2])/(sum(conf_matrix))
+print(paste('Accuracy',accuracy))
+
+#validate on test data
+validpred_bal=predict(fitimp_bal,testimp,type="class")
+conf_matrix_val<-table(validpred_bal,testimp$Improved)
+conf_matrix_val
+accuracy_val<-(conf_matrix_val[1,1]+conf_matrix_val[2,2])/(sum(conf_matrix_val))
+print(paste('Accuracy',accuracy_val))
+```
+On test data, the model with more balanced data predicted correctly 269 instances to not improve out of 360 that actually did not improve (class NO), whereas 22 cases were correctly predicted to improve out of 57 that actually did improve (class YES). These results are significantly better than the previous model using imbalanced training data. Although the ability to predict players who went from being just ok in one year to good in the next improved, the overall accuracy decreased to 70%.   
 
